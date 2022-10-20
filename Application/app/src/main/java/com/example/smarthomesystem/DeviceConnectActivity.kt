@@ -1,10 +1,7 @@
 package com.example.smarthomesystem
 
 import android.annotation.TargetApi
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import android.net.*
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
@@ -13,6 +10,7 @@ import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import com.example.smarthomesystem.databinding.ActivityDeviceConnectBinding
@@ -31,7 +29,20 @@ class DeviceConnectActivity : AppCompatActivity() {
         val connection = NetworkConnection(application)
 
         deviceConnectBinding.connectButton.setOnClickListener {
-            moveWifiSettingScreen()
+            openConnectDialog()
+
+//            val items = arrayOf("WiFi", "Bluetooth")
+//            var selectedItem : String? = null
+//            val builder = AlertDialog.Builder(this)
+//                .setTitle("Select Item")
+//                .setSingleChoiceItems(items, -1) { dialog, which ->
+//                    selectedItem = items[which]
+//                }
+//                .setPositiveButton("OK") { dialog, which ->
+//                    Toast.makeText(this,"'Selected",Toast.LENGTH_LONG).show()
+//                }
+//                .show()
+
         }
 
         connection.observe(this, Observer { isConnected ->
@@ -72,4 +83,23 @@ class DeviceConnectActivity : AppCompatActivity() {
         overridePendingTransition(0, 0)
     }
 
+    fun openConnectDialog()
+    {
+        val items = arrayOf("WiFi", "Bluetooh")
+        AlertDialog.Builder(this).run {
+            setTitle("items test")
+            setIcon(android.R.drawable.ic_dialog_info)
+            setSingleChoiceItems(items, -1, object : DialogInterface.OnClickListener {
+                override fun onClick(p0: DialogInterface?, p1: Int) {
+                    when (p1) {
+                        0 -> moveWifiSettingScreen()
+                        1 -> moveBluetoothSettingScreen()
+                        else -> finish()
+                    }
+                }
+            })
+            setPositiveButton("선택", null)
+            show()
+        }
+    }
 }
