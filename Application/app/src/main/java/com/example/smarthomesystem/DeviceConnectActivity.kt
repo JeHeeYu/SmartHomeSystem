@@ -9,6 +9,7 @@ import android.net.*
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.View
 import androidx.lifecycle.LiveData
@@ -35,96 +36,22 @@ class DeviceConnectActivity : AppCompatActivity() {
                 // WiFI에 연결되어 있지 않을 때
             }
         })
-
-
-        deviceConnectBinding.wifi.setOnClickListener {
-
-        }
-
     }
-}
 
-// WiFI 연결 상태를 확인하기 위한 Class
-class NetworkConnection(private val context: Context) : LiveData<Boolean>()
-{
-    private var connectivityManager : ConnectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    private lateinit var networkCallback: ConnectivityManager.NetworkCallback
-
-    override fun onActive()
+    fun moveWifiSettingScreen()
     {
-        super.onActive()
-        updateConnection()
-
-        when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.N -> {
-                connectivityManager.registerDefaultNetworkCallback(connectivityManagerCallback())
-            }
-
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP -> {
-                lollipopNetworkRequest()
-            }
-
-            else -> {
-                context.registerReceiver(networkReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
-            }
-        }
+        val intent = Intent(Settings.ACTION_WIFI_SETTINGS )
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+        startActivity(intent)
+        overridePendingTransition(0, 0)
     }
 
-    override fun onInactive()
+    fun moveBluetoothSettingScreen()
     {
-        super.onInactive()
-
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            connectivityManager.unregisterNetworkCallback(connectivityManagerCallback())
-        }
-        else {
-            context.unregisterReceiver(networkReceiver)
-        }
-    }
-
-    @TargetApi (Build.VERSION_CODES.LOLLIPOP)
-    private fun lollipopNetworkRequest()
-    {
-        val requestBuilder = NetworkRequest.Builder()
-            .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
-            .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-            .addTransportType(NetworkCapabilities.TRANSPORT_ETHERNET)
-        connectivityManager.registerNetworkCallback(requestBuilder.build(), connectivityManagerCallback())
-    }
-
-    private fun connectivityManagerCallback() : ConnectivityManager.NetworkCallback
-    {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            networkCallback = object : ConnectivityManager.NetworkCallback() {
-                override fun onLost(network: Network) {
-                    super.onLost(network)
-                    postValue(false)
-                }
-
-                override fun onAvailable(network: Network) {
-                    super.onAvailable(network)
-                    postValue(true)
-                }
-            }
-
-            return networkCallback
-        }
-
-        else {
-            throw IllegalAccessError("Error")
-        }
-    }
-
-    private val networkReceiver = object : BroadcastReceiver() {
-        override fun onReceive(p0: Context?, p1: Intent?) {
-            updateConnection()
-        }
-    }
-
-    private fun updateConnection()
-    {
-        val activityNetwork : NetworkInfo? = connectivityManager.activeNetworkInfo
-        postValue(activityNetwork?.isConnected == true)
+        val intent = Intent(Settings.ACTION_BLUETOOTH_SETTINGS  )
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+        startActivity(intent)
+        overridePendingTransition(0, 0)
     }
 
 }
