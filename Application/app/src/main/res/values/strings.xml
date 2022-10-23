@@ -4,4 +4,6 @@
     <string name="login_subtext">아직 회원이 아니신가요?</string>
     <string name="signup_button">회원가입</string>
     <string name="device_connect">연결 하기</string>
+    <string name="navigation_home">Home</string>
+    <string name="navigation_light">Light</string>
 </resources>

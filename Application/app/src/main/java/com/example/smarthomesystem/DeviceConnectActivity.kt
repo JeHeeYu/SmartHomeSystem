@@ -1,25 +1,26 @@
 package com.example.smarthomesystem
 
-import android.annotation.TargetApi
-import android.content.*
-import android.net.*
-import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
+import android.content.Context
+import android.content.DialogInterface
+import android.content.Intent
+import android.net.wifi.WifiManager
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
-import android.view.View
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AlertDialog
-import androidx.lifecycle.LiveData
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import com.example.smarthomesystem.databinding.ActivityDeviceConnectBinding
-import com.example.smarthomesystem.databinding.ActivityDeviceConnectBinding.inflate
 
 class DeviceConnectActivity : AppCompatActivity() {
 
     lateinit var deviceConnectBinding : ActivityDeviceConnectBinding
     var lastTimeBackPressed : Long = 0
+
+    lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
+    var networkConnectionStatus : Boolean = false
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         deviceConnectBinding = ActivityDeviceConnectBinding.inflate(layoutInflater)
@@ -29,29 +30,17 @@ class DeviceConnectActivity : AppCompatActivity() {
         val connection = NetworkConnection(application)
 
         deviceConnectBinding.connectButton.setOnClickListener {
-            openConnectDialog()
+            //openConnectDialog()
 
-//            val items = arrayOf("WiFi", "Bluetooth")
-//            var selectedItem : String? = null
-//            val builder = AlertDialog.Builder(this)
-//                .setTitle("Select Item")
-//                .setSingleChoiceItems(items, -1) { dialog, which ->
-//                    selectedItem = items[which]
-//                }
-//                .setPositiveButton("OK") { dialog, which ->
-//                    Toast.makeText(this,"'Selected",Toast.LENGTH_LONG).show()
-//                }
-//                .show()
-
+//            val intent = Intent(this, MainActivity::class.java)
+//            startActivity(intent)
         }
 
         connection.observe(this, Observer { isConnected ->
-            if(isConnected) {
-                // WiFI에 연결되어 있을 때
-                Log.e("jehee", "jehee2")
-            }
-            else {
-                // WiFI에 연결되어 있지 않을 때
+            // WiFI에 연결되어 있을 때
+            when(isConnected) {
+                true -> networkConnectionStatus = true
+                false -> networkConnectionStatus = false
             }
         })
     }
@@ -61,11 +50,20 @@ class DeviceConnectActivity : AppCompatActivity() {
         if(System.currentTimeMillis() - lastTimeBackPressed >= 1500) {
             lastTimeBackPressed = System.currentTimeMillis()
             Toast.makeText(this,"'뒤로' 버튼을 한번 더 누르시면 종료됩니다.",Toast.LENGTH_LONG).show()
+            //startActivity(Intent(this, MainActivity::class.java))
         }
         else {
             finish()
         }
     }
+
+
+    fun getNetworkName(context: Context): String? {
+        val manager = context.applicationContext.getSystemService(WIFI_SERVICE) as WifiManager
+        val info = manager.connectionInfo
+        return info.ssid
+    }
+
 
     fun moveWifiSettingScreen()
     {
@@ -73,6 +71,7 @@ class DeviceConnectActivity : AppCompatActivity() {
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
         startActivity(intent)
         overridePendingTransition(0, 0)
+
     }
 
     fun moveBluetoothSettingScreen()
@@ -92,7 +91,16 @@ class DeviceConnectActivity : AppCompatActivity() {
             setSingleChoiceItems(items, -1, object : DialogInterface.OnClickListener {
                 override fun onClick(p0: DialogInterface?, p1: Int) {
                     when (p1) {
-                        0 -> moveWifiSettingScreen()
+                        0 -> {
+                            if(networkConnectionStatus == true) {
+                                moveWifiSettingScreen()
+                            }
+                            else {
+
+                            }
+
+                        }
+
                         1 -> moveBluetoothSettingScreen()
                         else -> finish()
                     }
